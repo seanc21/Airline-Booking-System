@@ -56,12 +56,8 @@ public class Booking {
     }
 
     public static boolean correctFlight(String from, String to) {
-        if (from.equalsIgnoreCase("BHM") && to.equalsIgnoreCase("BZE")
-                || from.equalsIgnoreCase("BZE") && to.equalsIgnoreCase("BHM")) {
-            return true;
-        } else {
-            return false;
-        }
+        return from.equalsIgnoreCase("BHM") && to.equalsIgnoreCase("BZE")
+                || from.equalsIgnoreCase("BZE") && to.equalsIgnoreCase("BHM");
     }
 
     public void viewTicket(String name) {
