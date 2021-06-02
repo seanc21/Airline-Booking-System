@@ -2,14 +2,16 @@ package com.company;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
+import java.text.DecimalFormat;
 
 public class Booking {
+    DecimalFormat decimalFormat = new DecimalFormat("##0.00");
     ArrayList<Traveler> list = new ArrayList<>();
     ArrayList<Traveler> delete = new ArrayList<>();
     static ArrayList<String> seats = new ArrayList<String>();
     Scanner sc = new Scanner(System.in);
     Integer balance = 0;
-    Integer tickets = 0;
+    Integer ticket = 0;
 
     public void travelerInfo(int travelers, String flight, String From, String To, String code) {
         for (int i = 1; i < travelers + 1; i++) {
@@ -21,12 +23,30 @@ public class Booking {
                 System.out.println("Pick a seat!");
                 seat = sc.next();
                 if (seatAvailable(seat)) {
-                    tickets = balance * travelers;
-                    System.out.println(seat + " Picked!");
+                    if (From.equalsIgnoreCase("BHM") && To.equalsIgnoreCase("BZE")
+                            || From.equalsIgnoreCase("BZE") && To.equalsIgnoreCase("BHM")) {
+                        addTicketAmount(351);
+                    } else if (From.equalsIgnoreCase("MEM") && To.equalsIgnoreCase("JFK")
+                            || From.equalsIgnoreCase("JFK") && To.equalsIgnoreCase("MEM")) {
+                        addTicketAmount(116);
+                    }
+
+                    if (To.equalsIgnoreCase("LAX")) {
+                        addTicketAmount(101);
+                    } else if (To.equalsIgnoreCase("ATL")) {
+                        addTicketAmount(50);
+                    } else if (To.equalsIgnoreCase("MEX")) {
+                        addTicketAmount(225);
+                    } else if (To.equalsIgnoreCase("ORD")) {
+                        addTicketAmount(89);
+                    }
+                    firstClassTicket(seat);
+                    ticket = this.balance;
                     seats.add(seat);
-                    Traveler traveler = new Traveler(name, flight, From, To, seat, code, tickets);
+                    Traveler traveler = new Traveler(name, flight, From, To, seat, code, ticket);
                     list.add(traveler);
                     found = true;
+                    this.balance = 0;
                 } else {
                     System.err.println(seat + " is Unavailable");
                 }
@@ -39,13 +59,34 @@ public class Booking {
         this.balance += amount;
     }
 
-    public void viewBalance(String code) {
+    public void tripBalance(String code) {
+        Integer totalAmount = 0;
         for (Traveler passenger : list) {
             if (code.equalsIgnoreCase(passenger.code)) {
-                System.out.println("The total will be $" + passenger.ticketCost + "\n");
-                this.balance = 0;
-                break;
+                totalAmount += passenger.ticketCost;
             }
+        }
+        String total = decimalFormat.format(totalAmount);
+        System.out.println("The total will be $" + total + "\n");
+    }
+
+    public void tripRefund(String code) {
+        Integer totalAmount = 0;
+        for (Traveler passenger : list) {
+            if (code.equalsIgnoreCase(passenger.code)) {
+                totalAmount += passenger.ticketCost;
+            }
+        }
+    }
+
+    public void firstClassTicket(String seat) {
+        if (seat.equalsIgnoreCase("1A") || seat.equalsIgnoreCase("1B") || seat.equalsIgnoreCase("2A") || seat.equalsIgnoreCase("2B")
+            || seat.equalsIgnoreCase("3A") || seat.equalsIgnoreCase("3B") || seat.equalsIgnoreCase("4A") || seat.equalsIgnoreCase("4B")) {
+            addTicketAmount(85);
+            System.out.println(seat + " is a First Class seat!");
+        } else {
+            addTicketAmount(0);
+            System.out.println(seat + " is a Main Cabin seat!");
         }
     }
 
@@ -67,14 +108,14 @@ public class Booking {
         }
     }
 
-    public boolean rightFlight(String from, String to) {
+    public boolean rightFlightRoundtrip(String from, String to) {
         if (from.equalsIgnoreCase("BHM") && to.equalsIgnoreCase("BZE")
                 || from.equalsIgnoreCase("BZE") && to.equalsIgnoreCase("BHM")) {
-            addTicketAmount(351);
+//            addTicketAmount(351);
             return true;
         } else if (from.equalsIgnoreCase("MEM") && to.equalsIgnoreCase("JFK")
                 || from.equalsIgnoreCase("JFK") && to.equalsIgnoreCase("MEM")) {
-            addTicketAmount(116);
+//            addTicketAmount(116);
             return true;
         } else {
             return false;
@@ -82,17 +123,13 @@ public class Booking {
     }
 
     public boolean rightFlightOneway(String to) {
-        if (to.equalsIgnoreCase("BZE")) {
-            addTicketAmount(285);
+        if (to.equalsIgnoreCase("LAX")) {
             return true;
-        } else if (to.equalsIgnoreCase("BHM")) {
-            addTicketAmount(50);
+        } else if (to.equalsIgnoreCase("ATL")) {
             return true;
-        } else if (to.equalsIgnoreCase("JFK")) {
-            addTicketAmount(100);
+        } else if (to.equalsIgnoreCase("MEX")) {
             return true;
         } else if (to.equalsIgnoreCase("ORD")) {
-            addTicketAmount(89);
             return true;
         } else {
             return false;
@@ -103,9 +140,10 @@ public class Booking {
     public void viewTicket(String name) {
         for (Traveler passenger : list) {
             if (name.equalsIgnoreCase(passenger.code)) {
+                String ticketCost = decimalFormat.format(passenger.ticketCost);
                 System.out.print("Passenger: " + passenger.name + ", Flight: " + passenger.flight +
                         ", From: " + passenger.from + ", To: " + passenger.to + ", Seat " + passenger.seat +
-                        ", Code: " + passenger.code + "\n");
+                        ", Code: " + passenger.code + ", Ticket Cost: $" + ticketCost + "\n");
             }
         }
     }
@@ -146,15 +184,17 @@ public class Booking {
         boolean found = false;
         for (Traveler passenger : list) {
             if (code.equalsIgnoreCase(passenger.code)) {
+                String ticketCost = decimalFormat.format(passenger.ticketCost);
                 System.out.print("Passenger: " + passenger.name + ", Flight: " + passenger.flight +
-                        ", From: " + passenger.from + ", To: " + passenger.to + ", Seat " + passenger.seat + "\n");
+                        ", From: " + passenger.from + ", To: " + passenger.to + ", Seat " + passenger.seat +
+                        " Ticket Cost: $" + ticketCost + "\n");
                 found = true;
             }
         }
         if (!found) {
             System.err.println(code + " doesn't exist.");
         } else {
-            viewBalance(code);
+            tripBalance(code);
             System.out.println("Type 'Confirm'");
             String confirm = sc.next();
             if (confirm.equalsIgnoreCase("confirm")) {
@@ -191,8 +231,6 @@ public class Booking {
         boolean found = false;
         for (Traveler passenger : list) {
             if (inputName.equalsIgnoreCase(passenger.name)) {
-//                System.out.print("Passenger: " + passenger.name + ", Flight: " + passenger.flight +
-//                        ", From: " + passenger.from + ", To: " + passenger.to + ", Seat " + passenger.seat + "\n");
                 if (change.equalsIgnoreCase("name")) {
                     passenger.name = changed;
                     found = true;
@@ -201,12 +239,18 @@ public class Booking {
                     if (passenger.flight.equalsIgnoreCase("roundtrip")) {
                         passenger.flight = changed;
                         System.out.println("changing to oneway!");
+                        System.out.println("""
+                                These are the available flights from Memphis
+                                * Oneway Trip --> Birmingham BHM $50
+                                * Oneway Trip --> Belize City BZE $265
+                                * Oneway Trip --> Chicago O'Hare ORD $89
+                                * Oneway Trip --> New York JFK $101""");
                         while (true) {
                             System.out.println("Where are you traveling to?");
                             String to = sc.next();
-                            if (to.equalsIgnoreCase("BZE") || to.equalsIgnoreCase("BHM") || to.equalsIgnoreCase("JKF") || to.equalsIgnoreCase("MEM")) {
+                            if (rightFlightOneway(to)) {
                                 passenger.to = to;
-                                passenger.from = "N/A";
+                                passenger.from = "MEM";
                                 System.out.println("Flight process");
                                 break;
                             } else {
@@ -218,15 +262,16 @@ public class Booking {
                     } else if (passenger.flight.equalsIgnoreCase("oneway")) {
                         passenger.flight = changed;
                         System.out.println("changing to roundtrip!");
+                        System.out.println("""
+                        These are the available flights
+                        * Birmingham BHM <- 6h 23m -> Belize City BZE $351
+                        * Memphis MEM <- 2h 57m -> New York JFK $116""");
                         while (true) {
                             System.out.println("Where are you traveling from?");
                             String from = sc.next();
                             System.out.println("where are you traveling to?");
                             String to = sc.next();
-                            if (from.equalsIgnoreCase("BHM") && to.equalsIgnoreCase("BZE")
-                                    || from.equalsIgnoreCase("BZE") && to.equalsIgnoreCase("BHM")
-                                    || from.equalsIgnoreCase("MEM") && to.equalsIgnoreCase("JFK")
-                                    || from.equalsIgnoreCase("JFK") && to.equalsIgnoreCase("MEM")) {
+                            if (rightFlightRoundtrip(from, to)) {
                                 System.out.println("Flight process");
                                 passenger.from = from;
                                 passenger.to = to;
@@ -243,6 +288,7 @@ public class Booking {
                 } else if (change.equalsIgnoreCase("seat")) {
                     if (seatAvailable(changed)) {
                         System.out.println(changed + " Picked!");
+                        seats.remove(passenger.seat);
                         seats.add(changed);
                         passenger.seat = changed;
                         found = true;
@@ -271,19 +317,22 @@ public class Booking {
     // Refunding passenger ticket //
     public void refund(String code) {
         boolean found = false;
+        Integer totalAmount = 0;
         for (Traveler passenger : list) {
             if (code.equalsIgnoreCase(passenger.code)) {
+                totalAmount += passenger.ticketCost;
                 delete.add(passenger);
-                System.out.println("Refund was successful.");
-                System.out.println("Flight cost was $" + passenger.ticketCost + " and will be in your bank account within 2-3 business days.");
-                System.out.println("Thanks for choosing Beyond's Airline\n");
                 found = true;
+
             }
         }
         if (!found) {
             System.err.println(code + " doesn't exist.");
         }
         if (found) {
+            String total = decimalFormat.format(totalAmount);
+            System.out.println("Refund was successful of $" + total +" and will be in your bank account within 2-3 business days.");
+            System.out.println("Thanks for choosing Beyond's Airline\n");
             for (Traveler removePassenger : delete) {
                 list.remove(removePassenger);
                 seats.remove(removePassenger.seat);
